@@ -148,12 +148,30 @@ class StudyDeskClient:
             self.client_socket.connect((server_ip, PORT))
 
             prompt = self.client_socket.recv(BUFFER_SIZE).decode("utf-8").strip()
-            if prompt == "NICKNAME":
+            if prompt in ("AUTH", "NICKNAME"):
                 self.client_socket.sendall(nickname.encode("utf-8"))
+
+            auth_data = self.client_socket.recv(BUFFER_SIZE).decode("utf-8")
+            auth_lines = auth_data.splitlines(keepends=True)
+            auth_response = auth_lines[0].strip() if auth_lines else ""
+            extra_server_text = "".join(auth_lines[1:])
+
+            if auth_response == "AUTH_FAIL":
+                self.connected = False
+                self.close_socket()
+                messagebox.showerror("Authentication Failed", "This nickname is not authorized on the server.")
+                return
+            if auth_response != "AUTH_OK":
+                self.connected = False
+                self.close_socket()
+                messagebox.showerror("Connection Failed", "Unexpected server authentication response.")
+                return
 
             self.connected = True
             self.set_chat_controls(connected=True)
             self.show_chat_message("Connected to server.\n")
+            if extra_server_text:
+                self.show_chat_message(extra_server_text)
 
             self.receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
             self.receive_thread.start()

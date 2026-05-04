@@ -1,10 +1,10 @@
-IF DB_ID('StudyDesk') IS NULL
+IF DB_ID('Studydesk') IS NULL
 BEGIN
-    CREATE DATABASE StudyDesk;
+    CREATE DATABASE Studydesk;
 END
 GO
 
-USE StudyDesk;
+USE Studydesk;
 GO
 
 IF OBJECT_ID('dbo.Users', 'U') IS NULL

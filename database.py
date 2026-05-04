@@ -1,8 +1,8 @@
 import pyodbc
 
 
-SERVER = r"localhost"
-DATABASE = "StudyDesk"
+SERVER = r"VASANTH\SQLEXPRESS"
+DATABASE = "Studydesk"
 CONNECTION_STRING = (
     "DRIVER={ODBC Driver 17 for SQL Server};"
     f"SERVER={SERVER};"
@@ -90,6 +90,31 @@ def get_all_users():
         if connection:
             connection.rollback()
         return False, f"Get users failed: {error}"
+    finally:
+        if connection:
+            connection.close()
+
+
+def user_exists(name):
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM Users
+            WHERE Name = ?
+            """,
+            name,
+        )
+        count = cursor.fetchone()[0]
+        connection.commit()
+        return True, count > 0
+    except Exception as error:
+        if connection:
+            connection.rollback()
+        return False, f"User lookup failed: {error}"
     finally:
         if connection:
             connection.close()
